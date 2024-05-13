@@ -1,0 +1,29 @@
+name: 'Check Package Version Upgraded'
+description: 'Checks if the version in package.json is greater than the version in the specified branch.'
+inputs:
+  target_branch:
+    description: 'The target branch to compare the version against.'
+    required: true
+    default: 'main'
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install JQ
+      run: sudo apt-get install jq
+      shell: bash
+
+    - name: Fetch target branch and compare versions
+      run: |
+        git fetch --depth=1 origin ${{ inputs.target_branch }}
+        TARGET_VERSION=$(git show origin/${{ inputs.target_branch }}:package.json | jq -r '.version')
+        PACKAGE_VERSION=$(jq -r '.version' package.json)
+        
+        if [ "$(printf '%s\n' "$PACKAGE_VERSION" "$TARGET_VERSION" | sort -V | head -n1)" = "$PACKAGE_VERSION" ]; then
+          echo "Error: Package version ($PACKAGE_VERSION) must be greater than the target branch version ($TARGET_VERSION)."
+          exit 1
+        else
+          echo "Version check passed. Current version ($PACKAGE_VERSION) is greater than the target branch version ($TARGET_VERSION)."
+      shell: bash
