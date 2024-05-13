@@ -10,13 +10,21 @@ runs:
   steps:
     - name: Checkout code
       uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # Ensure full history for comparison, might increase action runtime
 
     - name: Install JQ
-      run: sudo apt-get install jq
+      run: |
+        if ! command -v jq &> /dev/null
+        then
+            sudo apt-get update
+            sudo apt-get install -y jq
+        fi
       shell: bash
 
     - name: Fetch target branch and compare versions
       run: |
+        set -eo pipefail
         git fetch --depth=1 origin ${{ inputs.target_branch }}
         TARGET_VERSION=$(git show origin/${{ inputs.target_branch }}:package.json | jq -r '.version')
         PACKAGE_VERSION=$(jq -r '.version' package.json)
