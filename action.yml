@@ -20,7 +20,7 @@ runs:
 
     - name: Fetch target branch and compare versions
       run: |
-        git fetch --depth=1 origin ${{ github.base_ref }}
+        git fetch --depth=10000 origin ${{ github.base_ref }}
         TARGET_VERSION=$(git show origin/${{github.base_ref}}:package.json | jq -r '.version')
         echo "Target branch: ${{github.base_ref}}"
         echo "Target version: $TARGET_VERSION"
