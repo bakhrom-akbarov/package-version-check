@@ -1,10 +1,5 @@
 name: 'Check Package Version Upgraded'
-description: 'Checks if the version in package.json is greater than the version in the specified branch.'
-inputs:
-  target_branch:
-    description: 'The target branch to compare the version against.'
-    required: true
-    default: 'main'
+description: 'Checks if the version in package.json of source branch is greater than the version in the target branch.'
 runs:
   using: 'composite'
   steps:
@@ -23,13 +18,13 @@ runs:
         git fetch --depth=10000 origin ${{ github.base_ref }}
         TARGET_VERSION=$(git show origin/${{github.base_ref}}:package.json | jq -r '.version')
         echo "Target branch: ${{github.base_ref}}"
-        echo "Target version: $TARGET_VERSION"
+        echo "Target branch version: $TARGET_VERSION"
         SOURCE_VERSION=$(git show origin/${{github.head_ref}}:package.json | jq -r '.version')
         echo "Source branch: ${{github.head_ref}}"
-        echo "Package version: $SOURCE_VERSION"
+        echo "Source branch version: $SOURCE_VERSION"
         
         if [ "$(printf '%s\n' "$SOURCE_VERSION" "$TARGET_VERSION" | sort -V | head -n1)" = "$SOURCE_VERSION" ]; then
-          echo "Error: Package version ($PACKAGE_VERSION) must be greater than the main branch version ($TARGET_VERSION)."
+          echo "Error: Package version ($SOURCE_VERSION) must be greater than the main branch version ($TARGET_VERSION)."
           exit 1
         else
           echo "Version check passed. Current version ($SOURCE_VERSION) is greater than the main branch version ($TARGET_VERSION)."
